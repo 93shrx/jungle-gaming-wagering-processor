@@ -1,0 +1,7 @@
+node_modules
+dist
+.env
+*.log
+/.claude/settings.local.json
+/.snapshot-wager.json
+/test/load/results/

@@ -1,0 +1,58 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: wager
+      POSTGRES_PASSWORD: wager
+      POSTGRES_DB: wager
+    command: ["postgres", "-c", "max_connections=300"]
+    ports: ["5433:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wager"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  localstack:
+    image: localstack/localstack:3
+    environment:
+      SERVICES: sqs
+    ports: ["4566:4566"]
+    volumes:
+      - ./scripts/localstack/init.sh:/etc/localstack/init/ready.d/init.sh
+    healthcheck:
+      test: ["CMD-SHELL", "awslocal sqs list-queues | grep -q wager-events"]
+      interval: 3s
+      timeout: 5s
+      retries: 30
+
+  # Migrations rodam UMA vez (evita corrida entre réplicas subindo juntas)
+  migrate:
+    build: .
+    profiles: ["app"]
+    command: ["bun", "run", "migration:up"]
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      DATABASE_URL: postgres://wager:wager@postgres:5432/wager
+
+  # Réplicas da aplicação: docker compose --profile app up --build --scale app=3
+  app:
+    build: .
+    profiles: ["app"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      localstack: { condition: service_healthy }
+    environment:
+      PORT: 3000
+      ROLE: all
+      DATABASE_URL: postgres://wager:wager@postgres:5432/wager
+      AWS_ENDPOINT: http://localstack:4566
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      SQS_QUEUE_URL: http://localstack:4566/000000000000/wager-transactions.fifo
+      SQS_DLQ_URL: http://localstack:4566/000000000000/wager-transactions-dlq.fifo
+      EVENTS_QUEUE_URL: http://localstack:4566/000000000000/wager-events.fifo
+    ports: ["3000-3010:3000"]
+    stop_grace_period: 30s
