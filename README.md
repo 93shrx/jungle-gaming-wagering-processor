@@ -17,7 +17,7 @@ Stack: Bun 1.x · TypeScript estrito · NestJS · MikroORM 7 · PostgreSQL 16 ·
 
 ```bash
 bun install
-docker compose up -d postgres localstack     # PostgreSQL (porta 5433) e LocalStack/SQS (porta 4566)
+docker compose up -d postgres localstack     # PostgreSQL (porta 5432) e LocalStack/SQS (porta 4566)
 bun run migration:up                          # aplica as migrations
 bun run start                                 # sobe a API na porta 3000 (todos os papéis)
 ```
@@ -26,8 +26,7 @@ Depois de iniciar, acesse a documentação interativa do Swagger em
 [`http://localhost:3000/docs`](http://localhost:3000/docs). A especificação OpenAPI em JSON fica disponível em
 [`http://localhost:3000/docs-json`](http://localhost:3000/docs-json).
 
-> O Postgres do compose é publicado na porta **5433** (e não 5432) para não colidir com um PostgreSQL local.
-> Se precisar de outra porta, ajuste `docker-compose.yml` e `DATABASE_URL`.
+O PostgreSQL fica disponível na porta padrão **5432**; o LocalStack/SQS usa a porta **4566**.
 
 Subindo **várias réplicas** em containers:
 

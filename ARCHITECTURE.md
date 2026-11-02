@@ -15,7 +15,8 @@ useful optimizations, but correctness does not depend on them.
 - **Language and framework:** strict TypeScript and NestJS.
 - **Persistence:** PostgreSQL 16 with MikroORM 7 for connection management,
   migrations, and transaction boundaries. Repositories use explicit SQL for
-  locking, conditional writes, and PostgreSQL-specific constraints.
+  locking, conditional writes, and PostgreSQL-specific constraints. Local
+  Docker Compose publishes PostgreSQL on the standard port `5432`.
 - **Messaging:** AWS SQS FIFO; LocalStack supplies SQS locally.
 - **Local orchestration:** Docker Compose.
 

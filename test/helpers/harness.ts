@@ -17,7 +17,7 @@ import { SilentLogger } from '../../src/infrastructure/observability/pino-logger
 import { SystemClock, UuidV7Generator } from '../../src/infrastructure/system';
 import type { EventPublisher } from '../../src/application/ports';
 
-export const TEST_DATABASE_URL = process.env.DATABASE_URL ?? 'postgres://wager:wager@localhost:5433/wager';
+export const TEST_DATABASE_URL = process.env.DATABASE_URL ?? 'postgres://wager:wager@localhost:5432/wager';
 
 export const FAST_POLICY: PendingReferencePolicy = {
   maxAttempts: 5,

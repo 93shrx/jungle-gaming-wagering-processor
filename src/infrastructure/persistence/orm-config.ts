@@ -2,7 +2,7 @@ import { defineConfig } from '@mikro-orm/postgresql';
 import { Migrator } from '@mikro-orm/migrations';
 import { Migration20260101000001_initial_schema } from './migrations/Migration20260101000001_initial_schema';
 
-export const DEFAULT_DATABASE_URL = 'postgres://wager:wager@localhost:5433/wager';
+export const DEFAULT_DATABASE_URL = 'postgres://wager:wager@localhost:5432/wager';
 
 /**
  * MikroORM é usado para: pool de conexões, `em.transactional()` (fronteira da transação SQL)

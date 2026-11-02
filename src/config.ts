@@ -34,7 +34,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   return {
     port: int('PORT', 3000),
     roles,
-    databaseUrl: env.DATABASE_URL ?? 'postgres://wager:wager@localhost:5433/wager',
+    databaseUrl: env.DATABASE_URL ?? 'postgres://wager:wager@localhost:5432/wager',
     aws: {
       region: env.AWS_REGION ?? 'us-east-1',
       endpoint: env.AWS_ENDPOINT ?? 'http://localhost:4566',
