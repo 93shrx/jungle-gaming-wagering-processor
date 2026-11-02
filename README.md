@@ -65,7 +65,7 @@ Ver [.env.example](.env.example). As principais: `DATABASE_URL`, `AWS_ENDPOINT`,
 | `bun run test:integration` | integração com **PostgreSQL e LocalStack reais** (schema, atomicidade, inbox, outbox, SQS, HTTP) |
 | `bun run test:concurrency` | concorrência com paralelismo real, **múltiplos processos** e reinício com kill -9 |
 | `bun run migration:up` / `migration:down` | aplica / reverte migrations |
-| `bun run test:load` | teste de carga (sobe 3 instâncias, ver [ARCHITECTURE.md](ARCHITECTURE.md#teste-de-carga)) |
+| `bun run test:load` | teste de carga (sobe 3 instâncias, ver [ARCHITECTURE.md](ARCHITECTURE.md#load-test)) |
 
 Os testes de integração e de concorrência precisam de `docker compose up -d postgres localstack`.
 Eles compartilham o mesmo banco (cada teste cria wallets novas) e rodam **em série**.
@@ -135,4 +135,4 @@ test/
 
 Não implementada (decisão aceita pelo desafio, seção 2). O ponto de extensão está explícito:
 `AuthGuard` + `ProviderIdentityPort` em [http-support.ts](src/interface/http/http-support.ts) e o desenho
-proposto (Keycloak/Zitadel via JWKS) em [ARCHITECTURE.md](ARCHITECTURE.md#autenticação).
+proposto (Keycloak/Zitadel via JWKS) em [ARCHITECTURE.md](ARCHITECTURE.md#authentication).
