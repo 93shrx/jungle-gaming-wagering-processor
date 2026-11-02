@@ -160,10 +160,10 @@ event.
 
 The HTTP API exposes wallet creation and lookup, ledger pagination,
 reconciliation, transaction submission and lookup, health probes, and Prometheus
-metrics. `GET /` is not a user interface route; it returns a normal `Cannot GET
-/` response. The service is an API and can be exercised with Postman or HTTP
-clients. OpenAPI/Swagger is not currently configured and is not required by the
-challenge.
+metrics. Swagger UI is available at `/docs`, with the generated OpenAPI JSON at
+`/docs-json`. The specification covers every HTTP endpoint, request DTO,
+parameter, idempotency header, response, and documented error status. `GET /`
+is not a user interface route; it returns a normal `Cannot GET /` response.
 
 The exception filter maps failures consistently: invalid input to `400`,
 missing resources to `404`, idempotency and wallet conflicts to `409`, business
@@ -305,5 +305,5 @@ results are generated artifacts and are excluded from Git by `.gitignore`.
   currencies and rejects currency mismatches.
 - The load-test measurements above are local observations, not performance
   guarantees.
-- Swagger/OpenAPI, OpenTelemetry, dashboards, and double-entry bookkeeping are
-  not implemented; they are not required for the challenge.
+- OpenTelemetry, dashboards, and double-entry bookkeeping are not implemented;
+  they are not required for the challenge.

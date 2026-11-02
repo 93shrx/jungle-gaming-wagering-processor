@@ -22,6 +22,10 @@ bun run migration:up                          # aplica as migrations
 bun run start                                 # sobe a API na porta 3000 (todos os papéis)
 ```
 
+Depois de iniciar, acesse a documentação interativa do Swagger em
+[`http://localhost:3000/docs`](http://localhost:3000/docs). A especificação OpenAPI em JSON fica disponível em
+[`http://localhost:3000/docs-json`](http://localhost:3000/docs-json).
+
 > O Postgres do compose é publicado na porta **5433** (e não 5432) para não colidir com um PostgreSQL local.
 > Se precisar de outra porta, ajuste `docker-compose.yml` e `DATABASE_URL`.
 
@@ -71,6 +75,9 @@ Os testes de integração e de concorrência precisam de `docker compose up -d p
 Eles compartilham o mesmo banco (cada teste cria wallets novas) e rodam **em série**.
 
 ## API
+
+Todos os endpoints HTTP — incluindo health checks e métricas — estão documentados e podem ser testados no
+[Swagger UI](http://localhost:3000/docs) enquanto a aplicação estiver em execução.
 
 ```http
 POST /wallets                                         # 201 | 409 wallet duplicada (playerId + currency)

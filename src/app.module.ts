@@ -13,6 +13,7 @@ import {
   type INestApplication,
 } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { CreateWallet } from './application/create-wallet';
 import {
   APP_LOGGER,
@@ -166,6 +167,17 @@ export async function createApp(config: AppConfig = loadConfig()): Promise<INest
   const app = await NestFactory.create(AppModule.register(config), { logger: ['error', 'warn'] });
   app.use(correlationIdMiddleware);
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Distributed Wagering Processor API')
+    .setDescription('API HTTP para wallets e processamento distribuído de transações de apostas.')
+    .setVersion('1.0.0')
+    .addTag('Wallets', 'Criação, consulta, ledger e reconciliação de wallets.')
+    .addTag('Wagering', 'Submissão idempotente e consulta de transações.')
+    .addTag('Health', 'Liveness e readiness da aplicação.')
+    .addTag('Observability', 'Métricas Prometheus.')
+    .build();
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('docs', app, swaggerDocument, { customSiteTitle: 'Wagering Processor API' });
   app.enableShutdownHooks();
   return app;
 }

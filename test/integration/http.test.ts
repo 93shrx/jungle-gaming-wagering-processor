@@ -45,6 +45,42 @@ const submit = (body: any, key = `${body.providerId}:${body.externalTransactionI
   post('/wagering/transactions', body, { 'Idempotency-Key': key });
 
 describe('contrato HTTP', () => {
+  test('Swagger UI e OpenAPI documentam todos os endpoints HTTP', async () => {
+    const ui = await fetch(`${base}/docs`);
+    expect(ui.status).toBe(200);
+    expect(await ui.text()).toContain('swagger-ui');
+
+    const response = await fetch(`${base}/docs-json`);
+    expect(response.status).toBe(200);
+    const document = await jsonOf(response);
+    expect(document.openapi).toStartWith('3.');
+    expect(Object.keys(document.paths).sort()).toEqual([
+      '/health/live',
+      '/health/ready',
+      '/metrics',
+      '/providers/{providerId}/wagering/transactions/{externalTransactionId}',
+      '/wagering/transactions',
+      '/wagering/transactions/{transactionId}',
+      '/wallets',
+      '/wallets/{walletId}',
+      '/wallets/{walletId}/ledger',
+      '/wallets/{walletId}/reconciliation',
+    ]);
+    expect(document.paths['/wagering/transactions'].post.parameters).toContainEqual(
+      expect.objectContaining({ name: 'Idempotency-Key', in: 'header', required: true }),
+    );
+    expect(document.paths['/wagering/transactions'].post.responses['202']).toBeDefined();
+    expect(document.paths['/wagering/transactions'].post.responses['422']).toBeDefined();
+    expect(document.paths['/metrics'].get.responses['200'].content['text/plain']).toBeDefined();
+    expect(document.paths['/health/ready'].get.responses['503']).toBeDefined();
+    expect(document.components.schemas.CreateWalletDto).toBeDefined();
+    expect(document.components.schemas.SubmitTransactionDto).toBeDefined();
+    expect(document.components.schemas.WalletResponseModel).toBeDefined();
+    expect(document.components.schemas.TransactionResponseModel).toBeDefined();
+    expect(document.components.schemas.RejectedTransactionResponseModel.properties.transactionId).toBeDefined();
+    expect(document.components.schemas.RejectedTransactionResponseModel.properties.error).toBeDefined();
+  });
+
   test('POST /wallets => 201 e formato do contrato; duplicada => 409', async () => {
     const w = await wallet();
     expect(w).toMatchObject({ balance: { amount: '1000.00', currency: 'BRL' }, version: 1 });
