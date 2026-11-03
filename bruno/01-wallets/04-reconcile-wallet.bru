@@ -1,0 +1,19 @@
+meta {
+  name: 04 Reconcile wallet
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/wallets/{{walletId}}/reconciliation
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {}
+}

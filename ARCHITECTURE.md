@@ -16,7 +16,8 @@ useful optimizations, but correctness does not depend on them.
 - **Persistence:** PostgreSQL 16 with MikroORM 7 for connection management,
   migrations, and transaction boundaries. Repositories use explicit SQL for
   locking, conditional writes, and PostgreSQL-specific constraints. Local
-  Docker Compose publishes PostgreSQL on the standard port `5432`.
+  Docker Compose publishes PostgreSQL on port `5432` by default; `POSTGRES_PORT`
+  can override the host port when it is already occupied.
 - **Messaging:** AWS SQS FIFO; LocalStack supplies SQS locally.
 - **Local orchestration:** Docker Compose.
 
@@ -265,9 +266,10 @@ DLQ behavior. Concurrency tests exercise parallel duplicate submissions,
 competing bets, hot and distinct wallets, multiple processes, concurrent
 publishers, out-of-order references, process death, and restart recovery.
 
-The last recorded validation for this repository passed TypeScript typecheck
-and 116 tests: 48 unit, 57 integration, and 11 concurrency tests. Re-run the
-commands above against the current environment before relying on that result.
+The current validation passed TypeScript typecheck and 117 tests: 48 unit, 58
+integration, and 11 concurrency tests. The demo workflow has also been executed
+end to end against a local API. Re-run the commands above against the current
+environment before relying on a test result.
 
 <a id="load-test"></a>
 
@@ -284,17 +286,52 @@ LocalStack in Docker on Windows 10 (build 26100), an Intel Core i7-3770, 8
 logical cores, and 16 GiB RAM. Each run lasted 25 seconds at concurrency 48,
 with 100 wallets, a 5% duplicate rate, and an 80% BET / 10% WIN / 10% LOSS mix:
 
-| Workload | Requests | Throughput | p50 | p95 | p99 | Errors | Peak outbox lag | Drain | Inconsistent wallets |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| No hot wallet (0% hot share) | 3,537 | 140.3 req/s | 282.6 ms | 714.1 ms | 992.5 ms | 0% | 7.42 s | 7.1 s | 0 |
-| Hot wallet (20% hot share) | 3,311 | 128.2 req/s | 62.8 ms | 2,634.1 ms | 5,485.8 ms | 0% | 5.434 s | 2.2 s | 0 |
+| Workload | Requests | Replays | Throughput | p50 | p95 | p99 | Errors | Peak outbox lag | Drain | Inconsistent wallets |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| No hot wallet (0% hot share) | 3,537 | 179 | 140.3 req/s | 282.6 ms | 714.1 ms | 992.5 ms | 0% | 7.42 s | 7.1 s | 0 |
+| Hot wallet (20% hot share) | 3,311 | 171 | 128.2 req/s | 62.8 ms | 2,634.1 ms | 5,485.8 ms | 0% | 5.434 s | 2.2 s | 0 |
 
-The hot-wallet run shows the expected tail-latency cost of contention. Results
+To reproduce the recorded 25-second runs from PowerShell, first ensure the
+local PostgreSQL and LocalStack services are running and migrations are applied:
+
+```powershell
+$env:DURATION_S = "25"
+$env:CONCURRENCY = "48"
+$env:WALLETS = "100"
+$env:DUPLICATE_RATE = "0.05"
+$env:HOT_SHARE = "0"
+bun run test:load
+```
+
+Repeat with `$env:HOT_SHARE = "0.2"` to route 20% of traffic to one hot wallet.
+The runner starts and stops three application instances on ports 3301–3303 by
+default. Set `INSTANCES` and `BASE_PORT` to change this topology. The report is
+written to `test/load/results/latest.json` (ignored by Git); copy important
+measurements into this document when intentionally refreshing the benchmark.
+
+The hot-wallet run shows the expected tail-latency cost of contention: p95
+increased from 714.1 ms to 2,634.1 ms and p99 from 992.5 ms to 5,485.8 ms,
+while throughput decreased from 140.3 to 128.2 requests/second. This illustrates
+the trade-off between per-wallet serialization and parallel throughput, not a
+production capacity target. Both runs had zero errors and zero wallet/ledger
+divergences; neither produced lock retries in the measured interval. Results
 depend on hardware, Docker resources, database state, and workload; rerun the
 test on the target environment before drawing capacity conclusions. Load
 results are generated artifacts and are excluded from Git by `.gitignore`.
 
-## 13. Trade-offs and limitations
+## 13. Continuous integration and demo workflow
+
+GitHub Actions runs on pushes, pull requests, and manual dispatch. The workflow
+uses the locked Bun dependencies, starts the Compose PostgreSQL and LocalStack
+services, applies migrations, and runs typecheck, unit, integration, and
+multi-process concurrency suites. Load tests are kept out of CI because their
+throughput and latency depend on runner resources.
+
+Run `bun run demo` against a running local API to demonstrate wallet creation,
+an idempotent wager replay, transaction/ledger queries, and reconciliation. The
+`bruno/` collection provides an alternate, reusable HTTP client workflow.
+
+## 14. Trade-offs and limitations
 
 - Authentication is intentionally a no-op until an external OIDC provider is
   integrated.
@@ -306,5 +343,7 @@ results are generated artifacts and are excluded from Git by `.gitignore`.
   currencies and rejects currency mismatches.
 - The load-test measurements above are local observations, not performance
   guarantees.
+- A host PostgreSQL service can occupy port `5432`; set `POSTGRES_PORT` and
+  update `DATABASE_URL` together when using a different host port.
 - OpenTelemetry, dashboards, and double-entry bookkeeping are not implemented;
   they are not required for the challenge.

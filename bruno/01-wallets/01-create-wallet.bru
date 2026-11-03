@@ -1,0 +1,31 @@
+meta {
+  name: 01 Create wallet
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/wallets
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "playerId": "bruno-{{$guid}}",
+    "initialBalance": {
+      "amount": "1000.00",
+      "currency": "BRL"
+    }
+  }
+}
+
+script:post-response {
+  const wallet = res.getBody();
+  bru.setEnvVar("walletId", wallet.id);
+  bru.setEnvVar("playerId", wallet.playerId);
+}

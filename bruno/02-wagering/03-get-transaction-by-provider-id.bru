@@ -1,0 +1,11 @@
+meta {
+  name: 03 Get transaction by provider ID
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/providers/{{providerId}}/wagering/transactions/{{externalTransactionId}}
+  body: none
+  auth: none
+}

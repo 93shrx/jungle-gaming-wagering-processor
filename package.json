@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "bun run src/main.ts",
+    "demo": "bun run scripts/demo.ts",
     "typecheck": "tsc --noEmit",
     "test": "bun test test/unit",
     "test:integration": "bun test test/integration --timeout 60000",

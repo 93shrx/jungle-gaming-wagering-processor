@@ -15,7 +15,8 @@ Stack: Bun 1.x · TypeScript estrito · NestJS · MikroORM 7 · PostgreSQL 16 ·
 
 ## Setup rápido
 
-```bash
+```powershell
+if (!(Test-Path .env)) { Copy-Item .env.example .env }
 bun install
 docker compose up -d postgres localstack     # PostgreSQL (porta 5432) e LocalStack/SQS (porta 4566)
 bun run migration:up                          # aplica as migrations
@@ -27,6 +28,8 @@ Depois de iniciar, acesse a documentação interativa do Swagger em
 [`http://localhost:3000/docs-json`](http://localhost:3000/docs-json).
 
 O PostgreSQL fica disponível na porta padrão **5432**; o LocalStack/SQS usa a porta **4566**.
+Se a porta padrão já estiver ocupada, altere `POSTGRES_PORT` **e** a porta do `DATABASE_URL` no `.env`.
+Por exemplo, use `POSTGRES_PORT=5433` e configure `DATABASE_URL` com `localhost:5433`.
 
 Subindo **várias réplicas** em containers:
 
@@ -68,10 +71,32 @@ Ver [.env.example](.env.example). As principais: `DATABASE_URL`, `AWS_ENDPOINT`,
 | `bun run test:integration` | integração com **PostgreSQL e LocalStack reais** (schema, atomicidade, inbox, outbox, SQS, HTTP) |
 | `bun run test:concurrency` | concorrência com paralelismo real, **múltiplos processos** e reinício com kill -9 |
 | `bun run migration:up` / `migration:down` | aplica / reverte migrations |
+| `bun run demo` | cria uma wallet de demonstração, envia/reenvia uma aposta e confere transação, ledger e reconciliação |
 | `bun run test:load` | teste de carga (sobe 3 instâncias, ver [ARCHITECTURE.md](ARCHITECTURE.md#load-test)) |
 
 Os testes de integração e de concorrência precisam de `docker compose up -d postgres localstack`.
 Eles compartilham o mesmo banco (cada teste cria wallets novas) e rodam **em série**.
+O workflow do GitHub Actions executa typecheck, testes unitários, integração e concorrência em cada push e pull request.
+
+## Demonstração rápida
+
+Com os serviços, migrations e API em execução, em outro terminal rode:
+
+```powershell
+bun run demo
+```
+
+O script cria dados únicos em cada execução. Ele cria uma wallet, processa uma aposta de `25.00 BRL`,
+envia a mesma operação novamente para demonstrar o replay idempotente, consulta a transação e o ledger
+e verifica que o saldo coincide com a reconciliação. Para outra instância da API, configure
+`$env:DEMO_API_URL = "http://localhost:3001"` antes de executar.
+
+## Bruno
+
+Importe a pasta [`bruno/`](bruno/) no [Bruno](https://www.usebruno.com/), escolha o ambiente `local` e
+execute as requisições na ordem indicada pela numeração. A resposta de criação da wallet salva
+automaticamente `walletId` e `playerId`; a submissão salva os identificadores da transação para as consultas.
+O Swagger em `/docs` também continua disponível como alternativa interativa no navegador.
 
 ## API
 

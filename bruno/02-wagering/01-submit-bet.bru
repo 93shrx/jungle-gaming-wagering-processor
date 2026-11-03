@@ -1,0 +1,39 @@
+meta {
+  name: 01 Submit BET
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/wagering/transactions
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Idempotency-Key: {{idempotencyKey}}
+}
+
+body:json {
+  {
+    "providerId": "{{providerId}}",
+    "externalTransactionId": "{{externalTransactionId}}",
+    "playerId": "{{playerId}}",
+    "walletId": "{{walletId}}",
+    "roundId": "{{roundId}}",
+    "gameId": "{{gameId}}",
+    "kind": "BET",
+    "money": {
+      "amount": "25.00",
+      "currency": "BRL"
+    }
+  }
+}
+
+script:post-response {
+  const result = res.getBody();
+  if (result.transactionId) {
+    bru.setEnvVar("transactionId", result.transactionId);
+  }
+}
