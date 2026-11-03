@@ -8,7 +8,7 @@
     "demo": "bun run scripts/demo.ts",
     "typecheck": "tsc --noEmit",
     "test": "bun test test/unit",
-    "test:integration": "bun test test/integration --timeout 60000",
+    "test:integration": "bun test test/integration --timeout 60000 --parallel=1",
     "test:concurrency": "bun test test/concurrency --timeout 120000",
     "migration:up": "bun run src/infrastructure/persistence/migrate.ts up",
     "migration:down": "bun run src/infrastructure/persistence/migrate.ts down",
